@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// 下面這一行要特別注意，確認 icon 名稱有沒有寫錯
 import { Download, Plus, Trash2, Calendar, Archive, FileSpreadsheet, Table, CheckCircle2 } from 'lucide-react';
 
 const SalaryTracker = () => {
@@ -277,5 +278,6 @@ const InputGroup = ({ label, type, value, onChange }) => (
     />
   </div>
 );
+
 
 export default SalaryTracker;
