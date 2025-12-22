@@ -18,7 +18,6 @@ const SalaryTracker = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [filterMonth, setFilterMonth] = useState('all');
   
-  // 拆分時間狀態
   const [timeIn, setTimeIn] = useState({ h: '09', m: '00' });
   const [timeOut, setTimeOut] = useState({ h: '18', m: '00' });
   const [newRecord, setNewRecord] = useState({
@@ -27,7 +26,6 @@ const SalaryTracker = () => {
     note: ''
   });
 
-  // 產生選項
   const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
   const quarters = ['00', '15', '30', '45'];
 
@@ -51,9 +49,12 @@ const SalaryTracker = () => {
     
     const [inH, inM] = checkIn.split(':').map(Number);
     const [outH, outM] = checkOut.split(':').map(Number);
+    
+    // 精確計算總分鐘數
     const totalMinutes = (outH * 60 + outM) - (inH * 60 + inM) - (Number(breakMinutes) || 0);
     const totalHours = Math.max(0, totalMinutes / 60);
 
+    // 這裡維持原始數值進行分配計算
     const regularHours = Math.min(totalHours, 8);
     const overtimeTotal = Math.max(totalHours - 8, 0);
     const overtime1 = Math.min(overtimeTotal, 2);
@@ -65,6 +66,7 @@ const SalaryTracker = () => {
     if (note === '雙薪') regularPay += (8 * settings.hourlyRate);
 
     return {
+      // 存儲時保留兩位小數確保精確度
       regularHours: Number(regularHours.toFixed(2)),
       overtimeTotal: Number(overtimeTotal.toFixed(2)),
       overtime1: Number(overtime1.toFixed(2)),
@@ -91,8 +93,9 @@ const SalaryTracker = () => {
     salary: acc.salary + (Number(r.salary) || 0),
     ot1: acc.ot1 + (Number(r.overtime1) || 0),
     ot2: acc.ot2 + (Number(r.overtime2) || 0),
-    otTotal: acc.otTotal + (Number(r.overtimeTotal) || 0)
-  }), { salary: 0, ot1: 0, ot2: 0, otTotal: 0 });
+    otTotal: acc.otTotal + (Number(r.overtimeTotal) || 0),
+    regTotal: acc.regTotal + (Number(r.regularHours) || 0)
+  }), { salary: 0, ot1: 0, ot2: 0, otTotal: 0, regTotal: 0 });
 
   const copyForSheets = () => {
     if (filteredRecords.length === 0) return alert('目前沒有資料');
@@ -100,11 +103,11 @@ const SalaryTracker = () => {
     let tsv = `薪資報表: ${dates[0]} ~ ${dates[dates.length-1]}\n\n`;
     tsv += "日期\t上班\t下班\t休息\t正常\t1.34加\t1.67加\t總加\t薪資\t備註\n";
     [...filteredRecords].reverse().forEach(r => {
-      tsv += `${r.date}\t${r.checkIn}\t${r.checkOut}\t${r.breakMinutes}\t${r.regularHours}\t${r.overtime1}\t${r.overtime2}\t${r.overtimeTotal}\t${r.salary}\t${r.note}\n`;
+      tsv += `${r.date}\t${r.checkIn}\t${r.checkOut}\t${r.breakMinutes}\t${r.regularHours.toFixed(2)}\t${r.overtime1.toFixed(2)}\t${r.overtime2.toFixed(2)}\t${r.overtimeTotal.toFixed(2)}\t${r.salary}\t${r.note}\n`;
     });
-    tsv += `\n總計\t\t\t\t\t${totals.ot1.toFixed(2)}\t${totals.ot2.toFixed(2)}\t${totals.otTotal.toFixed(2)}\t${totals.salary}\n`;
+    tsv += `\n總計\t\t\t\t${totals.regTotal.toFixed(2)}\t${totals.ot1.toFixed(2)}\t${totals.ot2.toFixed(2)}\t${totals.otTotal.toFixed(2)}\t${totals.salary}\n`;
     navigator.clipboard.writeText(tsv);
-    alert('已複製到剪貼簿');
+    alert('已複製到剪貼簿（含精確小數）');
     setShowExportModal(false);
   };
 
@@ -180,39 +183,37 @@ const SalaryTracker = () => {
           {lastAddedInfo && <div className="mt-2 text-emerald-600 text-xs font-bold flex items-center gap-1 animate-bounce"><CheckCircle2 size={14}/> {lastAddedInfo}</div>}
         </div>
 
-        {/* 表格清單 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-4 bg-slate-50 border-b flex justify-between items-center">
-            <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)} className="bg-white border rounded-lg p-1 text-sm font-bold">
-              <option value="all">所有月份</option>
-              {[...new Set(records.map(r => r.date.substring(0, 7)))].map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
-            <button onClick={() => setShowExportModal(true)} className="text-emerald-600 flex items-center gap-1 font-bold text-sm bg-emerald-50 px-3 py-1 rounded-lg transition"><Download size={16}/> 匯出</button>
+          <div className="p-4 bg-slate-50 border-b flex justify-between items-center text-sm font-bold">
+            <div className="flex items-center gap-2 text-slate-500"><Calendar size={16} /><span>歷史清單</span></div>
+            <button onClick={() => setShowExportModal(true)} className="text-emerald-600 flex items-center gap-1 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg transition"><Download size={16}/> 匯出報表</button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left whitespace-nowrap">
               <thead className="text-[10px] text-slate-400 bg-slate-50 uppercase font-black">
-                <tr><th className="p-4">日期/時間</th><th className="p-4">正常</th><th className="p-4 text-center">1.34/1.67</th><th className="p-4">總加班</th><th className="p-4">薪資</th><th className="p-4"></th></tr>
+                <tr><th className="p-4">日期/時間</th><th className="p-4">正常工時</th><th className="p-4 text-center">1.34/1.67 加班</th><th className="p-4">總加班</th><th className="p-4">薪資估算</th><th className="p-4"></th></tr>
               </thead>
               <tbody>
                 {filteredRecords.map(r => (
                   <tr key={r.id} className="border-b hover:bg-slate-50 transition group">
                     <td className="p-4">
-                      <div className="text-sm font-bold">{r.date}</div>
-                      <div className="text-[10px] text-slate-400">{r.checkIn}-{r.checkOut} ({r.breakMinutes}m)</div>
+                      <div className="text-sm font-bold text-slate-700">{r.date}</div>
+                      <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><Clock size={10}/> {r.checkIn}-{r.checkOut} ({r.breakMinutes === 0 ? '無休息' : '休60m'})</div>
                     </td>
-                    <td className="p-4 text-sm">{Number(r.regularHours).toFixed(1)}h</td>
-                    <td className="p-4 text-center text-xs font-bold text-orange-500">{r.overtime1}h / {r.overtime2}h</td>
-                    <td className="p-4 text-sm font-black text-orange-600">{r.overtimeTotal}h</td>
+                    <td className="p-4 text-sm font-medium text-slate-600">{Number(r.regularHours).toFixed(2)}h</td>
+                    <td className="p-4 text-center text-xs font-bold text-orange-500">{Number(r.overtime1).toFixed(2)}h / {Number(r.overtime2).toFixed(2)}h</td>
+                    <td className="p-4 text-sm font-black text-orange-600">{Number(r.overtimeTotal).toFixed(2)}h</td>
                     <td className="p-4 text-sm font-black text-emerald-600">NT$ {r.salary.toLocaleString()}</td>
                     <td className="p-4 text-right"><button onClick={() => {setDeleteTarget(r); setShowDeleteModal(true)}} className="p-2 text-slate-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><Trash2 size={16}/></button></td>
                   </tr>
                 ))}
                 <tr className="bg-slate-900 text-white font-bold">
-                  <td className="p-4 text-xs">當月總計</td><td className="p-4"></td>
+                  <td className="p-4 text-xs">當月總計</td>
+                  <td className="p-4 text-sm">{totals.regTotal.toFixed(2)}h</td>
                   <td className="p-4 text-center text-xs text-orange-300">{totals.ot1.toFixed(2)} / {totals.ot2.toFixed(2)}</td>
                   <td className="p-4 text-orange-400">{totals.otTotal.toFixed(2)}h</td>
-                  <td className="p-4 text-emerald-400">NT$ {totals.salary.toLocaleString()}</td><td className="p-4"></td>
+                  <td className="p-4 text-emerald-400 text-lg">NT$ {totals.salary.toLocaleString()}</td>
+                  <td className="p-4"></td>
                 </tr>
               </tbody>
             </table>
@@ -220,24 +221,22 @@ const SalaryTracker = () => {
         </div>
       </div>
 
-      {/* 底部總覽 */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t p-6 z-40">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div>
-            <span className="text-[10px] text-slate-400 font-black block tracking-widest uppercase">實領薪資</span>
+            <span className="text-[10px] text-slate-400 font-black block tracking-widest uppercase">預估實領總額</span>
             <div className="flex items-center gap-2">
               <span className="text-3xl font-black text-emerald-600">{showSalary ? `NT$ ${totals.salary.toLocaleString()}` : 'NT$ ********'}</span>
               <button onClick={() => setShowSalary(!showSalary)} className="text-slate-300">{showSalary ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
             </div>
           </div>
           <div className="text-right">
-             <span className="text-[10px] text-orange-400 font-black block tracking-widest uppercase">總加班</span>
-             <span className="text-xl font-black text-orange-600">{totals.otTotal.toFixed(2)}h</span>
+             <span className="text-[10px] text-orange-400 font-black block tracking-widest uppercase">當月總加班</span>
+             <span className="text-xl font-black text-orange-600">{totals.otTotal.toFixed(2)} <span className="text-xs">h</span></span>
           </div>
         </div>
       </div>
 
-      {/* Modal 部分省略或保持不變 */}
       {showExportModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
