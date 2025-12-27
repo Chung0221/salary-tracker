@@ -50,23 +50,26 @@ const SalaryTracker = () => {
     const [inH, inM] = checkIn.split(':').map(Number);
     const [outH, outM] = checkOut.split(':').map(Number);
     
-    // 精確計算總分鐘數
+    // 計算總工時（小時）
     const totalMinutes = (outH * 60 + outM) - (inH * 60 + inM) - (Number(breakMinutes) || 0);
     const totalHours = Math.max(0, totalMinutes / 60);
 
-    // 這裡維持原始數值進行分配計算
+    // 分配時數：前 8 小時為正常，超過 8 小時為加班
     const regularHours = Math.min(totalHours, 8);
     const overtimeTotal = Math.max(totalHours - 8, 0);
     const overtime1 = Math.min(overtimeTotal, 2);
     const overtime2 = Math.max(overtimeTotal - 2, 0);
 
-    let regularPay = regularHours * settings.hourlyRate;
+    // 計算薪資
+    // 1. 正常薪資：若為雙薪，則實際工時之時薪加倍計算 (時數 * 時薪 * 2)
+    const multiplier = (note === '雙薪') ? 2 : 1;
+    const regularPay = regularHours * settings.hourlyRate * multiplier;
+
+    // 2. 加班薪資：不論是否雙薪，加班費通常維持 1.34 / 1.67 倍率計算
     const overtimePay = (overtime1 * settings.hourlyRate * settings.overtimeRate1) + 
                        (overtime2 * settings.hourlyRate * settings.overtimeRate2);
-    if (note === '雙薪') regularPay += (8 * settings.hourlyRate);
 
     return {
-      // 存儲時保留兩位小數確保精確度
       regularHours: Number(regularHours.toFixed(2)),
       overtimeTotal: Number(overtimeTotal.toFixed(2)),
       overtime1: Number(overtime1.toFixed(2)),
@@ -198,7 +201,7 @@ const SalaryTracker = () => {
                   <tr key={r.id} className="border-b hover:bg-slate-50 transition group">
                     <td className="p-4">
                       <div className="text-sm font-bold text-slate-700">{r.date}</div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><Clock size={10}/> {r.checkIn}-{r.checkOut} ({r.breakMinutes === 0 ? '無休息' : '休60m'})</div>
+                      <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><Clock size={10}/> {r.checkIn}-{r.checkOut} ({r.breakMinutes === 0 ? '無休息' : '休60m'}) {r.note && <span className="text-blue-500 bg-blue-50 px-1 rounded">{r.note}</span>}</div>
                     </td>
                     <td className="p-4 text-sm font-medium text-slate-600">{Number(r.regularHours).toFixed(2)}h</td>
                     <td className="p-4 text-center text-xs font-bold text-orange-500">{Number(r.overtime1).toFixed(2)}h / {Number(r.overtime2).toFixed(2)}h</td>
@@ -208,7 +211,7 @@ const SalaryTracker = () => {
                   </tr>
                 ))}
                 <tr className="bg-slate-900 text-white font-bold">
-                  <td className="p-4 text-xs">當月總計</td>
+                  <td className="p-4 text-xs">合計清單</td>
                   <td className="p-4 text-sm">{totals.regTotal.toFixed(2)}h</td>
                   <td className="p-4 text-center text-xs text-orange-300">{totals.ot1.toFixed(2)} / {totals.ot2.toFixed(2)}</td>
                   <td className="p-4 text-orange-400">{totals.otTotal.toFixed(2)}h</td>
@@ -231,8 +234,8 @@ const SalaryTracker = () => {
             </div>
           </div>
           <div className="text-right">
-             <span className="text-[10px] text-orange-400 font-black block tracking-widest uppercase">當月總加班</span>
-             <span className="text-xl font-black text-orange-600">{totals.otTotal.toFixed(2)} <span className="text-xs">h</span></span>
+              <span className="text-[10px] text-orange-400 font-black block tracking-widest uppercase">當月總加班</span>
+              <span className="text-xl font-black text-orange-600">{totals.otTotal.toFixed(2)} <span className="text-xs">h</span></span>
           </div>
         </div>
       </div>
@@ -252,7 +255,12 @@ const SalaryTracker = () => {
           <div className="bg-white p-8 rounded-3xl max-w-xs w-full shadow-2xl">
             <h3 className="font-black text-center mb-6">確定刪除紀錄？</h3>
             <div className="flex gap-3">
-              <button onClick={() => { setRecords(records.filter(r => r.id !== deleteTarget.id)); saveData(records.filter(r => r.id !== deleteTarget.id), null); setShowDeleteModal(false); }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-black">刪除</button>
+              <button onClick={() => { 
+                const updated = records.filter(r => r.id !== deleteTarget.id);
+                setRecords(updated); 
+                saveData(updated, null); 
+                setShowDeleteModal(false); 
+              }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-black">刪除</button>
               <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button>
             </div>
           </div>
