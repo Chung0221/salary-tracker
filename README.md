@@ -1,5 +1,8 @@
 薪資出勤管理系統  (Salary-Tracker)
 
+[點擊這裡直接使用 (Live Demo)]([你的作品網址](https://salary-tracker-202512212.vercel.app/))
+
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) 
 一個基於  React  打造的輕量化薪資管理工具，專為需要精確計算「雙薪」與「勞基法加班費」的勞動者設計。除了手動紀錄工時外，系統會自動根據台灣勞基法標準計算  1.34x  與  1.67x  加班費。
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
