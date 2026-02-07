@@ -147,7 +147,7 @@ const SalaryTracker = () => {
                     <label className="text-xs font-bold text-blue-600 block mb-1">時薪設定：</label>
                     <input type="number" value={settings.hourlyRate} onChange={e => {const s={...settings, hourlyRate:Number(e.target.value)}; setSettings(s); saveData(null, s);}} className="p-2 rounded-lg border bg-white w-[120px] font-black text-blue-700 outline-none"/>
                 </div>
-                <div className="text-[10px] text-blue-400 mt-5 italic">* 存錢賺高利息，每一塊錢都要精算！</div>
+                <div className="text-[10px] text-blue-400 mt-5 italic">*精神賠償每一塊錢都要精算！</div>
             </div>
             <div className="border-t border-blue-100 pt-3">
                 <button onClick={() => setShowDeleteAllModal(true)} className="flex items-center gap-2 text-red-500 text-xs font-bold hover:bg-red-50 p-1 rounded transition-colors"><Trash2 size={12}/> 清空紀錄</button>
@@ -295,3 +295,4 @@ const SalaryTracker = () => {
 };
 
 export default SalaryTracker;
+
