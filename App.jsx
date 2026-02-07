@@ -4,7 +4,7 @@ import { Download, Plus, Trash2, Calendar, Archive, FileSpreadsheet, Table, Chec
 const SalaryTracker = () => {
   const [records, setRecords] = useState([]);
   const [settings, setSettings] = useState({
-    hourlyRate: 200, // 維持原本的 200，方便其他使用者
+    hourlyRate: 200,
     overtimeRate1: 1.34,
     overtimeRate2: 1.67,
     settlementDay: 25
@@ -54,7 +54,6 @@ const SalaryTracker = () => {
     if (totalMinutes < 0) totalMinutes = 0;
     const netHours = totalMinutes / 60;
 
-    // 休息日出勤 (休出) 邏輯
     if (note === '休出') {
       const ot1 = Math.min(netHours, 2); 
       const ot2 = Math.min(Math.max(netHours - 2, 0), 6); 
@@ -92,17 +91,7 @@ const SalaryTracker = () => {
     const checkIn = `${timeIn.h}:${timeIn.m}`;
     const checkOut = `${timeOut.h}:${timeOut.m}`;
     const calc = calculateSalary({ checkIn, checkOut, breakMinutes: newRecord.breakMinutes, note: newRecord.note });
-    
-    const record = { 
-        id: Date.now(), 
-        date: newRecord.date,
-        checkIn, 
-        checkOut, 
-        breakMinutes: newRecord.breakMinutes,
-        note: newRecord.note,
-        ...calc 
-    };
-    
+    const record = { id: Date.now(), date: newRecord.date, checkIn, checkOut, breakMinutes: newRecord.breakMinutes, note: newRecord.note, ...calc };
     const updatedRecords = [record, ...records].sort((a, b) => new Date(b.date) - new Date(a.date));
     setRecords(updatedRecords);
     saveData(updatedRecords, null);
@@ -138,7 +127,7 @@ const SalaryTracker = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 pb-48 text-slate-900 font-sans">
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 pb-32 text-slate-900 font-sans">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex justify-between items-center">
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">💰 薪資出勤系統</h1>
@@ -159,7 +148,6 @@ const SalaryTracker = () => {
           </div>
         )}
 
-        {/* 輸入區域 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1">
@@ -198,7 +186,6 @@ const SalaryTracker = () => {
               </select>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-slate-400">休息 (分鐘)</span>
@@ -210,12 +197,11 @@ const SalaryTracker = () => {
                 ))}
               </div>
             </div>
-            <button onClick={addRecord} className="w-full bg-blue-600 text-white py-3 rounded-lg font-black mt-auto hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100">新增紀錄</button>
+            <button onClick={addRecord} className="w-full bg-blue-600 text-white py-3 rounded-lg font-black mt-auto hover:bg-blue-700 transition-colors">新增紀錄</button>
           </div>
           {lastAddedInfo && <div className="text-emerald-600 text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/>{lastAddedInfo}</div>}
         </div>
 
-        {/* 列表區域 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-4 bg-slate-50 border-b flex justify-between items-center">
             <span className="font-bold text-slate-500">歷史清單</span>
@@ -242,7 +228,7 @@ const SalaryTracker = () => {
                     <td className="p-4 text-sm font-medium">{(r.overtimeTotal + r.regularHours).toFixed(2)}h</td>
                     <td className="p-4 text-xs text-slate-500">
                       {r.note === '休出' ? (
-                        <span><span className="text-orange-600 font-bold">1.34:</span> {r.overtime1}h / <span className="text-orange-600 font-bold">1.67:</span> {r.overtime2}h</span>
+                        <span><span className="text-orange-600 font-bold">1.34:</span> {r.overtime1} / <span className="text-orange-600 font-bold">1.67:</span> {r.overtime2}</span>
                       ) : (
                         <span>正: {r.regularHours}h / 加: {r.overtimeTotal.toFixed(1)}h</span>
                       )}
@@ -259,65 +245,57 @@ const SalaryTracker = () => {
         </div>
       </div>
 
-      {/* 底部總計列 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t p-6 z-40 shadow-2xl">
-        <div className="max-w-6xl mx-auto flex flex-wrap justify-between items-end gap-4">
-          <div className="space-y-1">
-            <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-loose">本月預估實領總額</span>
-            <div className="flex items-center gap-3">
-              <span className="text-4xl font-black text-emerald-600 leading-none">{showSalary ? `NT$ ${totals.salary.toLocaleString()}` : 'NT$ ****'}</span>
-              <button onClick={() => setShowSalary(!showSalary)} className="p-2 bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-all">
-                {showSalary ? <EyeOff size={18}/> : <Eye size={18}/>}
+      {/* 底部總計列 - 已優化尺寸與透明度 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-lg border-t p-3 md:p-4 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        <div className="max-w-6xl mx-auto flex justify-between items-center gap-2">
+          <div className="flex-1">
+            <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">本月實領</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xl md:text-2xl font-black text-emerald-600 leading-tight">
+                {showSalary ? `NT$ ${totals.salary.toLocaleString()}` : 'NT$ ****'}
+              </span>
+              <button onClick={() => setShowSalary(!showSalary)} className="text-slate-400 p-1">
+                {showSalary ? <EyeOff size={14}/> : <Eye size={14}/>}
               </button>
             </div>
             {showSalary && (
-              <div className="flex items-center gap-1.5 text-xs font-bold text-blue-500 mt-2">
-                <TrendingUp size={14}/>
-                <span>存入數位帳戶(2%)，每月可得約 NT$ {estMonthlyInterest.toFixed(1)} 利息</span>
+              <div className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-blue-500">
+                <TrendingUp size={10}/> 預計利息 NT$ {estMonthlyInterest.toFixed(1)}
               </div>
             )}
           </div>
           
-          <div className="flex gap-6">
+          <div className="flex gap-4 border-l pl-4">
             <div className="text-right">
-                <span className="text-[10px] text-slate-400 font-black uppercase">總時數</span>
-                <div className="text-xl font-black text-slate-700">{(totals.regTotal + totals.otTotal).toFixed(2)} <span className="text-xs font-normal">h</span></div>
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">總時數</span>
+                <div className="text-base font-black text-slate-700">{(totals.regTotal + totals.otTotal).toFixed(1)}h</div>
             </div>
-            <div className="text-right border-l pl-6">
-                <span className="text-[10px] text-orange-400 font-black uppercase">加班/休出時數</span>
-                <div className="text-xl font-black text-orange-600">{totals.otTotal.toFixed(2)} <span className="text-xs font-normal">h</span></div>
+            <div className="text-right">
+                <span className="text-[10px] text-orange-400 font-black uppercase tracking-tighter">加班</span>
+                <div className="text-base font-black text-orange-600">{totals.otTotal.toFixed(1)}h</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 單筆刪除確認彈窗 */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white p-8 rounded-3xl max-w-xs w-full shadow-2xl">
+          <div className="bg-white p-6 rounded-2xl max-w-xs w-full shadow-2xl">
             <h3 className="font-black text-center mb-6">確定刪除此筆紀錄？</h3>
             <div className="flex gap-3">
-              <button onClick={() => {
-                const updated = records.filter(r => r.id !== deleteTarget.id);
-                setRecords(updated);
-                saveData(updated, null);
-                setShowDeleteModal(false);
-              }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-black">刪除</button>
+              <button onClick={() => { const updated = records.filter(r => r.id !== deleteTarget.id); setRecords(updated); saveData(updated, null); setShowDeleteModal(false); }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-black">刪除</button>
               <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 全域刪除確認彈窗 */}
       {showDeleteAllModal && (
         <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white p-8 rounded-3xl max-w-xs w-full border-t-8 border-red-500 shadow-2xl">
-            <div className="flex justify-center mb-4 text-red-500">
-                <AlertTriangle size={48} />
-            </div>
+          <div className="bg-white p-6 rounded-2xl max-w-xs w-full border-t-8 border-red-500 shadow-2xl">
+            <div className="flex justify-center mb-4 text-red-500"><AlertTriangle size={48} /></div>
             <h3 className="font-black text-center text-lg mb-2">危險操作！</h3>
-            <p className="text-slate-500 text-sm text-center mb-6">確定要清空所有紀錄嗎？<br/>這會清除所有利息數據且無法復原。</p>
+            <p className="text-slate-500 text-sm text-center mb-6">確定要清空所有紀錄嗎？</p>
             <div className="flex flex-col gap-2">
               <button onClick={deleteAllRecords} className="w-full py-3 bg-red-500 text-white rounded-xl font-black">是的，全部刪除</button>
               <button onClick={() => setShowDeleteAllModal(false)} className="w-full py-3 bg-slate-100 rounded-xl font-bold text-slate-400">取消</button>
@@ -326,15 +304,11 @@ const SalaryTracker = () => {
         </div>
       )}
 
-      {/* 匯出彈窗 */}
       {showExportModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
-            <div className="flex justify-center mb-4 text-emerald-500">
-              <FileSpreadsheet size={48} />
-            </div>
+            <div className="flex justify-center mb-4 text-emerald-500"><FileSpreadsheet size={48} /></div>
             <h3 className="text-xl font-black mb-2 text-center">匯出資料</h3>
-            <p className="text-slate-400 text-sm text-center mb-6">點擊下方按鈕將資料複製到剪貼簿，即可貼至 Google Sheets。</p>
             <button onClick={copyForSheets} className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black flex items-center justify-center gap-3">
               <Copy size={20}/> 複製到剪貼簿
             </button>
