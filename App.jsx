@@ -14,7 +14,7 @@ const SalaryTracker = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
-  const [showSalary, setShowSalary] = useState(true);
+  const [showSalary, setShowSalary] = useState(false); // 修改：預設改為隱藏
   const [lastAddedInfo, setLastAddedInfo] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   
@@ -58,7 +58,6 @@ const SalaryTracker = () => {
       const ot1 = Math.min(netHours, 2); 
       const ot2 = Math.min(Math.max(netHours - 2, 0), 6); 
       const pay = Math.round((ot1 * settings.hourlyRate * 1.34) + (ot2 * settings.hourlyRate * 1.67));
-      
       return { regularHours: 0, overtimeTotal: netHours, overtime1: ot1, overtime2: ot2, salary: pay };
     }
 
@@ -105,19 +104,37 @@ const SalaryTracker = () => {
   };
 
   return (
-    /* 這裡 pb-40 確保頁面底部有足夠空間，不會被固定欄擋住內容 */
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 pb-40 text-slate-900 font-sans">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex justify-between items-center">
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">💰 薪資出勤系統</h1>
-          <button onClick={() => setShowSettings(!showSettings)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm">⚙️ 設定</button>
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-900 font-sans">
+      <div className="max-w-6xl mx-auto space-y-4">
+        
+        {/* 頂部導覽列：標題 + 總額 + 設定 */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-black text-slate-800 tracking-tight">💰 薪資系統</h1>
+            <div className="h-8 w-[1px] bg-slate-200 mx-1 hidden sm:block"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-black text-emerald-600">
+                {showSalary ? `NT$ ${totals.salary.toLocaleString()}` : 'NT$ ****'}
+              </span>
+              <button onClick={() => setShowSalary(!showSalary)} className="text-slate-400 hover:text-slate-600">
+                {showSalary ? <EyeOff size={16}/> : <Eye size={16}/>}
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+             <div className="hidden md:block text-right mr-2">
+                <span className="text-[10px] text-slate-400 font-bold block leading-none">加班總計</span>
+                <span className="text-sm font-bold text-orange-600">{totals.otTotal.toFixed(1)}h</span>
+             </div>
+             <button onClick={() => setShowSettings(!showSettings)} className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-200 transition-colors">⚙️ 設定</button>
+          </div>
         </div>
 
         {showSettings && (
           <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-4">
             <div>
                 <label className="text-xs font-bold text-blue-600 block mb-1">時薪 (NT$)：</label>
-                <input type="number" value={settings.hourlyRate} onChange={e => {const s={...settings, hourlyRate:Number(e.target.value)}; setSettings(s); saveData(null, s);}} className="p-2 rounded-lg border bg-white w-full max-w-[200px]"/>
+                <input type="number" value={settings.hourlyRate} onChange={e => {const s={...settings, hourlyRate:Number(e.target.value)}; setSettings(s); saveData(null, s);}} className="p-2 rounded-lg border bg-white w-full max-w-[200px] font-bold"/>
             </div>
             <div className="border-t border-blue-100 pt-3">
                 <button onClick={() => setShowDeleteAllModal(true)} className="flex items-center gap-2 text-red-500 text-xs font-bold hover:bg-red-50 p-2 rounded-lg transition-colors">
@@ -127,6 +144,7 @@ const SalaryTracker = () => {
           </div>
         )}
 
+        {/* 輸入區域 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1">
@@ -157,7 +175,7 @@ const SalaryTracker = () => {
             </div>
             <div className="space-y-1">
               <span className="text-xs font-bold text-slate-400">類別</span>
-              <select value={newRecord.note} onChange={e => setNewRecord({...newRecord, note: e.target.value})} className="w-full p-2 bg-slate-50 rounded-lg border">
+              <select value={newRecord.note} onChange={e => setNewRecord({...newRecord, note: e.target.value})} className="w-full p-2 bg-slate-50 rounded-lg border font-medium">
                 <option value="">正常上班</option>
                 <option value="休出">休息日 (休出)</option>
                 <option value="雙薪">雙薪</option>
@@ -176,15 +194,19 @@ const SalaryTracker = () => {
                 ))}
               </div>
             </div>
-            <button onClick={addRecord} className="w-full bg-blue-600 text-white py-3 rounded-lg font-black mt-auto hover:bg-blue-700">新增紀錄</button>
+            <button onClick={addRecord} className="w-full bg-blue-600 text-white py-3 rounded-lg font-black mt-auto hover:bg-blue-700 transition-shadow shadow-md">新增紀錄</button>
           </div>
           {lastAddedInfo && <div className="text-emerald-600 text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/>{lastAddedInfo}</div>}
         </div>
 
+        {/* 歷史清單 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-4 bg-slate-50 border-b flex justify-between items-center">
-            <span className="font-bold text-slate-500">歷史清單</span>
-            <button onClick={() => setShowExportModal(true)} className="text-emerald-600 text-sm font-bold flex items-center gap-1"><Download size={14}/> 匯出</button>
+            <div className="flex items-center gap-2">
+               <span className="font-black text-slate-500">歷史清單</span>
+               <span className="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">{records.length} 筆</span>
+            </div>
+            <button onClick={() => setShowExportModal(true)} className="text-emerald-600 text-sm font-bold flex items-center gap-1 hover:bg-emerald-50 px-2 py-1 rounded-lg"><Download size={14}/> 匯出</button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -192,78 +214,55 @@ const SalaryTracker = () => {
                 <tr>
                   <th className="p-4">日期/時間</th>
                   <th className="p-4">淨工時</th>
-                  <th className="p-4">倍率</th>
+                  <th className="p-4">類別</th>
                   <th className="p-4">薪資</th>
                   <th className="p-4"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {records.map(r => (
-                  <tr key={r.id} className="border-b hover:bg-slate-50">
+                  <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="p-4 text-sm font-bold">
                       {r.date}
-                      <div className="text-[10px] text-slate-400 font-normal">{r.checkIn}-{r.checkOut} {r.note && <span className="text-blue-500">[{r.note}]</span>}</div>
+                      <div className="text-[10px] text-slate-400 font-normal">{r.checkIn}-{r.checkOut}</div>
                     </td>
                     <td className="p-4 text-sm font-medium">{(r.overtimeTotal + r.regularHours).toFixed(1)}h</td>
-                    <td className="p-4 text-[10px] text-slate-500">
-                      {r.note === '休出' ? `1.34/1.67` : `正/加`}
+                    <td className="p-4">
+                       <span className={`text-[10px] font-bold px-2 py-1 rounded ${r.note === '休出' ? 'bg-orange-100 text-orange-600' : r.note === '雙薪' ? 'bg-purple-100 text-purple-600' : 'bg-slate-100 text-slate-500'}`}>
+                          {r.note || '正常'}
+                       </span>
                     </td>
                     <td className="p-4 text-sm font-black text-emerald-600">NT$ {r.salary?.toLocaleString()}</td>
                     <td className="p-4 text-right">
-                      <button onClick={() => {setDeleteTarget(r); setShowDeleteModal(true)}} className="text-slate-300 hover:text-red-500"><Trash2 size={16}/></button>
+                      <button onClick={() => {setDeleteTarget(r); setShowDeleteModal(true)}} className="text-slate-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16}/></button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {records.length === 0 && (
+              <div className="p-20 text-center text-slate-300 font-bold">目前尚無紀錄</div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 底部固定欄 - 精簡化並強化透明度 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t p-3 z-40">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div>
-            <span className="text-[10px] text-slate-400 font-black uppercase">本月實領</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-black text-emerald-600 leading-none">
-                {showSalary ? `NT$ ${totals.salary.toLocaleString()}` : 'NT$ ****'}
-              </span>
-              <button onClick={() => setShowSalary(!showSalary)} className="text-slate-400">
-                {showSalary ? <EyeOff size={14}/> : <Eye size={14}/>}
-              </button>
-            </div>
-          </div>
-          
-          <div className="flex gap-4">
-            <div className="text-right">
-                <span className="text-[10px] text-slate-400 font-black uppercase">總時數</span>
-                <div className="text-base font-black text-slate-700">{(totals.regTotal + totals.otTotal).toFixed(1)}h</div>
-            </div>
-            <div className="text-right border-l pl-4">
-                <span className="text-[10px] text-orange-400 font-black uppercase">加班</span>
-                <div className="text-base font-black text-orange-600">{totals.otTotal.toFixed(1)}h</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 刪除確認等彈窗 */}
+      {/* 彈窗部分維持原樣 */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl max-w-xs w-full shadow-2xl">
             <h3 className="font-black text-center mb-6">確定刪除此筆紀錄？</h3>
             <div className="flex gap-3">
               <button onClick={() => { const updated = records.filter(r => r.id !== deleteTarget.id); setRecords(updated); localStorage.setItem('salary_records', JSON.stringify(updated)); setShowDeleteModal(false); }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-black">刪除</button>
-              <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button>
+              <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-500">取消</button>
             </div>
           </div>
         </div>
       )}
 
       {showDeleteAllModal && (
-        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 rounded-2xl max-w-xs w-full border-t-8 border-red-500">
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl max-w-xs w-full border-t-8 border-red-500 shadow-2xl">
             <h3 className="font-black text-center text-lg mb-2">確定清空所有紀錄？</h3>
             <div className="flex flex-col gap-2 mt-4">
               <button onClick={() => { setRecords([]); localStorage.setItem('salary_records', JSON.stringify([])); setShowDeleteAllModal(false); }} className="w-full py-3 bg-red-500 text-white rounded-xl font-black">是的，全部刪除</button>
@@ -275,12 +274,12 @@ const SalaryTracker = () => {
 
       {showExportModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full">
-            <h3 className="text-xl font-black mb-6 text-center">匯出資料</h3>
-            <button onClick={copyForSheets} className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black flex items-center justify-center gap-3">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+            <h3 className="text-xl font-black mb-6 text-center text-slate-800">匯出資料</h3>
+            <button onClick={copyForSheets} className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100">
               <Copy size={20}/> 複製到剪貼簿
             </button>
-            <button onClick={() => setShowExportModal(false)} className="w-full py-4 text-slate-400 font-bold mt-2 text-center">關閉</button>
+            <button onClick={() => setShowExportModal(false)} className="w-full py-4 text-slate-400 font-bold mt-2 text-center hover:text-slate-600">關閉</button>
           </div>
         </div>
       )}
