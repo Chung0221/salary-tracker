@@ -198,7 +198,7 @@ const SalaryTracker = () => {
         {/* 歷史清單 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-4 bg-slate-50 border-b flex justify-between items-center">
-            <span className="text-sm font-black text-slate-500">歷史紀錄清單</span>
+            <span className="text-sm font-black text-slate-500">血汗紀錄</span>
             <button onClick={() => setShowExportModal(true)} className="text-emerald-600 text-xs font-bold flex items-center gap-1"><Download size={14}/> 匯出</button>
           </div>
           <div className="overflow-x-auto">
@@ -295,5 +295,6 @@ const SalaryTracker = () => {
 };
 
 export default SalaryTracker;
+
 
 
