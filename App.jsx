@@ -274,7 +274,7 @@ const SalaryTracker = () => {
       {showExportModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
-            <h3 className="text-xl font-black mb-6">匯出至試算表</h3>
+            <h3 className="text-xl font-black mb-6">匯出至試算表(我真棒👍)</h3>
             <button onClick={() => {
                 let tsv = "日期\t時薪\t工時\t1.34加班\t1.67加班\t薪資\t備註\n";
                 [...records].reverse().forEach(r => {
@@ -295,6 +295,7 @@ const SalaryTracker = () => {
 };
 
 export default SalaryTracker;
+
 
 
 
