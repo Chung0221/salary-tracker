@@ -105,7 +105,7 @@ const SalaryTracker = () => {
         {/* 頂部導覽列：數據全集中 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap justify-between items-center gap-4">
           <div className="flex flex-wrap items-center gap-6">
-            <h1 className="text-xl font-black text-slate-800 tracking-tight">💰 薪資系統</h1>
+            <h1 className="text-xl font-black text-slate-800 tracking-tight">💰 精神賠償金核算系統</h1>
             
             {/* 總薪資區 */}
             <div className="flex flex-col">
@@ -295,4 +295,5 @@ const SalaryTracker = () => {
 };
 
 export default SalaryTracker;
+
 
