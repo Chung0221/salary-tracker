@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Trash2, Calendar, Archive, FileSpreadsheet, Table, CheckCircle2, Eye, EyeOff, Copy, Clock, Coffee } from 'lucide-react';
+import { Download, Plus, Trash2, Calendar, Archive, FileSpreadsheet, Table, CheckCircle2, Eye, EyeOff, Copy, Clock, Coffee, AlertTriangle } from 'lucide-react';
 
 const SalaryTracker = () => {
   const [records, setRecords] = useState([]);
@@ -13,6 +13,7 @@ const SalaryTracker = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // 新增：一鍵刪除彈窗控制
   const [showSalary, setShowSalary] = useState(true);
   const [lastAddedInfo, setLastAddedInfo] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -49,18 +50,15 @@ const SalaryTracker = () => {
     const [inH, inM] = checkIn.split(':').map(Number);
     const [outH, outM] = checkOut.split(':').map(Number);
     
-    // 總分鐘數
     let totalMinutes = (outH * 60 + outM) - (inH * 60 + inM) - (Number(breakMinutes) || 0);
     if (totalMinutes < 0) totalMinutes = 0;
     const totalHours = totalMinutes / 60;
 
-    // 時數分配
     const regularHours = Math.min(totalHours, 8);
     const overtimeTotal = Math.max(totalHours - 8, 0);
     const overtime1 = Math.min(overtimeTotal, 2);
     const overtime2 = Math.max(overtimeTotal - 2, 0);
 
-    // 薪資計算
     const multiplier = (note === '雙薪') ? 2 : 1;
     const regularPay = regularHours * settings.hourlyRate * multiplier;
     const overtimePay = (overtime1 * settings.hourlyRate * settings.overtimeRate1) + 
@@ -97,7 +95,13 @@ const SalaryTracker = () => {
     setTimeout(() => setLastAddedInfo(null), 3000);
   };
 
-  // 總計計算
+  // 一鍵刪除所有資料函數
+  const deleteAllRecords = () => {
+    setRecords([]);
+    saveData([], null);
+    setShowDeleteAllModal(false);
+  };
+
   const totals = records.reduce((acc, r) => ({
     salary: acc.salary + (r.salary || 0),
     ot1: acc.ot1 + (r.overtime1 || 0),
@@ -126,9 +130,20 @@ const SalaryTracker = () => {
         </div>
 
         {showSettings && (
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <label className="text-xs font-bold text-blue-600 block mb-1">時薪 (NT$)：</label>
-            <input type="number" value={settings.hourlyRate} onChange={e => {const s={...settings, hourlyRate:Number(e.target.value)}; setSettings(s); saveData(null, s);}} className="p-2 rounded-lg border bg-white w-full max-w-[200px]"/>
+          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-4">
+            <div>
+                <label className="text-xs font-bold text-blue-600 block mb-1">時薪 (NT$)：</label>
+                <input type="number" value={settings.hourlyRate} onChange={e => {const s={...settings, hourlyRate:Number(e.target.value)}; setSettings(s); saveData(null, s);}} className="p-2 rounded-lg border bg-white w-full max-w-[200px]"/>
+            </div>
+            {/* 新增：一鍵刪除按鈕 */}
+            <div className="border-t border-blue-100 pt-3">
+                <button 
+                  onClick={() => setShowDeleteAllModal(true)}
+                  className="flex items-center gap-2 text-red-500 text-xs font-bold hover:bg-red-50 p-2 rounded-lg transition-colors"
+                >
+                    <Trash2 size={14}/> 清空所有歷史紀錄
+                </button>
+            </div>
           </div>
         )}
 
@@ -242,7 +257,7 @@ const SalaryTracker = () => {
         </div>
       </div>
 
-      {/* 刪除確認彈窗 */}
+      {/* 單筆刪除確認彈窗 */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-8 rounded-3xl max-w-xs w-full">
@@ -255,6 +270,23 @@ const SalaryTracker = () => {
                 setShowDeleteModal(false);
               }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-black">刪除</button>
               <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold">取消</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 全域刪除確認彈窗 (新增) */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-3xl max-w-xs w-full border-t-8 border-red-500">
+            <div className="flex justify-center mb-4 text-red-500">
+                <AlertTriangle size={48} />
+            </div>
+            <h3 className="font-black text-center text-lg mb-2">危險操作！</h3>
+            <p className="text-slate-500 text-sm text-center mb-6">確定要清空所有薪資紀錄嗎？<br/>這會清除所有利息試算的基底數據且無法復原。</p>
+            <div className="flex flex-col gap-2">
+              <button onClick={deleteAllRecords} className="w-full py-3 bg-red-500 text-white rounded-xl font-black">是的，全部刪除</button>
+              <button onClick={() => setShowDeleteAllModal(false)} className="w-full py-3 bg-slate-100 rounded-xl font-bold text-slate-400">我再想想 (取消)</button>
             </div>
           </div>
         </div>
