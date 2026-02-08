@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Trash2, Eye, EyeOff, Copy, ThumbsUp, Leaf, AlertTriangle } from 'lucide-react';
+import { Download, Trash2, Eye, EyeOff, Copy, ThumbsUp, Leaf, AlertTriangle, Clock, DollarSign } from 'lucide-react';
 
 const SalaryTracker = () => {
   const [records, setRecords] = useState([]);
@@ -106,13 +106,13 @@ const SalaryTracker = () => {
   }), { salary: 0, ot1: 0, ot2: 0, otTotal: 0 });
 
   const copyForSheets = () => {
-    let tsv = "日期\t上班\t下班\t休息(分)\t時薪\t總工時\t1.34加班\t1.67加班\t總加班時數\t薪資(精神賠償)\t備註\n";
+    let tsv = "日期\t上班\t下班\t休息(分)\t時薪\t總工時\t1.34加班\t1.67加班\t總加班時數\t薪資\t備註\n";
     [...records].reverse().forEach(r => {
       tsv += `${r.date}\t${r.checkIn}\t${r.checkOut}\t${r.breakMinutes}\t${r.appliedRate}\t${(r.regularHours+r.overtimeTotal).toFixed(1)}\t${r.overtime1.toFixed(1)}\t${r.overtime2.toFixed(1)}\t${r.overtimeTotal.toFixed(1)}\t${r.salary}\t${r.note}\n`;
     });
     tsv += `\n[當月結算]\t\t\t\t\t\t${totals.ot1.toFixed(1)}\t${totals.ot2.toFixed(1)}\t${totals.otTotal.toFixed(1)}\t${totals.salary}\t願自由如風👍\n`;
     navigator.clipboard.writeText(tsv);
-    alert('👍 匯出成功！願利息如春雨，悄悄入帳。');
+    alert('👍 匯出成功！');
     setShowExportModal(false);
   };
 
@@ -121,14 +121,13 @@ const SalaryTracker = () => {
     localStorage.setItem('salary_records', JSON.stringify([]));
     setShowDeleteAllModal(false);
     setShowSettings(false);
-    alert('所有紀錄已清空。');
   };
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-900 font-sans">
       <div className="max-w-6xl mx-auto space-y-4">
         
-        {/* 頂部數據列 (已恢復 加班總時數統計) */}
+        {/* 頂部數據列 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-wrap justify-between items-center gap-4">
           <div className="flex flex-wrap items-center gap-6">
             <h1 className="text-xl font-black text-slate-800 tracking-tighter flex items-center gap-2">
@@ -137,50 +136,43 @@ const SalaryTracker = () => {
             </h1>
             <div className="flex flex-col">
               <span className="text-[10px] text-slate-400 font-bold uppercase">預計入帳總額</span>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-emerald-600">
-                  {showPrivateData ? `NT$ ${totals.salary.toLocaleString()}` : 'NT$ ****'}
-                </span>
+              <div className="flex items-center gap-2 text-emerald-600 font-black">
+                <span className="text-lg">{showPrivateData ? `NT$ ${totals.salary.toLocaleString()}` : 'NT$ ****'}</span>
                 <button onClick={() => setShowPrivateData(!showPrivateData)} className="text-slate-400">
                   {showPrivateData ? <EyeOff size={16}/> : <Eye size={16}/>}
                 </button>
               </div>
             </div>
-
-            {/* 加班數據展示區 */}
+            {/* 加班統計區域 */}
             <div className="flex gap-4 border-l pl-6 border-slate-100">
               <div className="flex flex-col">
                 <span className="text-[10px] text-orange-400 font-bold uppercase">總加班</span>
-                <span className="text-sm font-black text-orange-600">
-                  {showPrivateData ? `${totals.otTotal.toFixed(1)}h` : '--'}
-                </span>
+                <span className="text-sm font-black text-orange-600">{showPrivateData ? `${totals.otTotal.toFixed(1)}h` : '--'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">1.34h / 1.67h</span>
-                <span className="text-xs font-bold text-slate-600">
-                  {showPrivateData ? `${totals.ot1.toFixed(1)} / ${totals.ot2.toFixed(1)}` : '--'}
-                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">1.34 / 1.67</span>
+                <span className="text-xs font-bold text-slate-600">{showPrivateData ? `${totals.ot1.toFixed(1)} / ${totals.ot2.toFixed(1)}` : '--'}</span>
               </div>
             </div>
           </div>
           <button onClick={() => setShowSettings(!showSettings)} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold">⚙️ 設定</button>
         </div>
 
-        {/* 雲淡風輕口號區域 */}
+        {/* 雲淡風輕標語 */}
         <div className="bg-emerald-50 rounded-2xl border border-emerald-100 p-6 flex items-center gap-4 shadow-sm">
             <div className="p-2 bg-emerald-500 rounded-full shrink-0"><Leaf size={20} className="text-white"/></div>
-            <p className="text-emerald-800 font-bold text-base md:text-lg leading-relaxed">{currentSlogan}</p>
+            <p className="text-emerald-800 font-bold text-base md:text-lg">{currentSlogan}</p>
         </div>
 
-        {/* 輸入與列表保持原樣，確保功能完整 */}
+        {/* 輸入區域 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
             <div className="space-y-1">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">日期</span>
-              <input type="date" value={newRecord.date} onChange={e => setNewRecord({...newRecord, date: e.target.value})} className="w-full p-2 bg-slate-50 rounded-lg border-none focus:ring-2 focus:ring-emerald-500"/>
+              <span className="text-xs font-bold text-slate-400 uppercase">日期</span>
+              <input type="date" value={newRecord.date} onChange={e => setNewRecord({...newRecord, date: e.target.value})} className="w-full p-2 bg-slate-50 rounded-lg border-none"/>
             </div>
             <div className="space-y-1">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">時段</span>
+              <span className="text-xs font-bold text-slate-400 uppercase">進出時間</span>
               <div className="flex gap-1">
                 <select value={timeIn.h} onChange={e => setTimeIn({...timeIn, h: e.target.value})} className="flex-1 p-2 bg-slate-50 rounded-lg border-none">
                   {Array.from({length:24},(_,i)=>i.toString().padStart(2,'0')).map(h=><option key={h} value={h}>{h}</option>)}
@@ -191,7 +183,7 @@ const SalaryTracker = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">性質</span>
+              <span className="text-xs font-bold text-slate-400 uppercase">性質</span>
               <div className="flex gap-1">
                 <select value={newRecord.note} onChange={e => setNewRecord({...newRecord, note: e.target.value})} className="flex-[2] p-2 bg-slate-50 rounded-lg border-none font-bold text-emerald-600">
                   <option value="">例行紀錄</option>
@@ -211,17 +203,19 @@ const SalaryTracker = () => {
           </div>
         </div>
 
-        {/* 歷史清單 */}
+        {/* 歷史紀錄列表 - 補回時間與時薪 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-4 bg-slate-50 border-b flex justify-between items-center text-xs font-black text-slate-400">
-            <span className="tracking-widest uppercase">📜 歷史存摺</span>
-            <button onClick={() => setShowExportModal(true)} className="text-emerald-600 flex items-center gap-1 border border-emerald-200 px-3 py-1 rounded-full"><Download size={14}/> 匯出</button>
+          <div className="p-4 bg-slate-50 border-b flex justify-between items-center text-xs font-black text-slate-400 uppercase tracking-widest">
+            <span>📜 歷史存摺</span>
+            <button onClick={() => setShowExportModal(true)} className="text-emerald-600 border border-emerald-200 px-3 py-1 rounded-full"><Download size={14}/></button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[650px]">
+            <table className="w-full text-left min-w-[700px]">
               <thead className="text-[10px] text-slate-300 bg-slate-50 font-black uppercase">
                 <tr>
-                  <th className="p-4">日期</th>
+                  <th className="p-4">受難日期</th>
+                  <th className="p-4 text-center">上下班時間</th>
+                  <th className="p-4 text-center">時薪</th>
                   <th className="p-4 text-center">工時</th>
                   <th className="p-4 text-center">1.34 / 1.67</th>
                   <th className="p-4 text-right">補償金額</th>
@@ -231,10 +225,24 @@ const SalaryTracker = () => {
               <tbody className="divide-y divide-slate-50 text-sm">
                 {records.map(r => (
                   <tr key={r.id} className="hover:bg-emerald-50/30 transition-colors">
-                    <td className="p-4 font-bold text-slate-600">{r.date}<div className="text-[10px] text-slate-400 font-normal">{r.checkIn}-{r.checkOut}</div></td>
-                    <td className="p-4 text-center">{(r.overtimeTotal + r.regularHours).toFixed(1)}h</td>
+                    <td className="p-4 font-bold text-slate-600">{r.date}</td>
+                    <td className="p-4 text-center text-slate-500 font-medium">
+                      <div className="flex items-center justify-center gap-1">
+                        <Clock size={12} className="text-slate-300"/>
+                        {r.checkIn} - {r.checkOut}
+                      </div>
+                    </td>
+                    <td className="p-4 text-center text-slate-400">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <DollarSign size={12}/>
+                        {r.appliedRate}
+                      </div>
+                    </td>
+                    <td className="p-4 text-center font-medium">{(r.overtimeTotal + r.regularHours).toFixed(1)}h</td>
                     <td className="p-4 text-center text-xs font-bold text-orange-500">{r.overtimeTotal > 0 ? `${r.overtime1.toFixed(1)} / ${r.overtime2.toFixed(1)}` : '-'}</td>
-                    <td className="p-4 text-right font-black text-emerald-600">{showPrivateData ? `NT$ ${r.salary?.toLocaleString()}` : 'NT$ ****'}</td>
+                    <td className="p-4 text-right font-black text-emerald-600">
+                      {showPrivateData ? `NT$ ${r.salary?.toLocaleString()}` : 'NT$ ****'}
+                    </td>
                     <td className="p-4 text-right">
                       <button onClick={() => {setDeleteTarget(r); setShowDeleteModal(true)}} className="text-slate-200 hover:text-red-300"><Trash2 size={16}/></button>
                     </td>
@@ -246,17 +254,15 @@ const SalaryTracker = () => {
         </div>
       </div>
 
-      {/* 時薪與一鍵清空彈窗 */}
+      {/* 設定與刪除彈窗 */}
       {showSettings && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-2xl max-w-xs w-full shadow-2xl space-y-6">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">時薪設定</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase block mb-2">時薪設定</label>
               <input type="number" value={settings.hourlyRate} onChange={e => {const s={...settings, hourlyRate:Number(e.target.value)}; setSettings(s); saveData(null, s);}} className="w-full p-4 rounded-xl bg-slate-50 font-black text-emerald-700 text-2xl outline-none"/>
             </div>
-            <div className="pt-4 border-t border-slate-100">
-              <button onClick={() => setShowDeleteAllModal(true)} className="w-full py-3 bg-red-50 text-red-500 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><AlertTriangle size={14}/> 一鍵清空所有紀錄</button>
-            </div>
+            <button onClick={() => setShowDeleteAllModal(true)} className="w-full py-3 bg-red-50 text-red-500 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><AlertTriangle size={14}/> 一鍵清空所有紀錄</button>
             <button onClick={() => setShowSettings(false)} className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold">儲存並關閉</button>
           </div>
         </div>
@@ -265,36 +271,34 @@ const SalaryTracker = () => {
       {/* 清空確認 */}
       {showDeleteAllModal && (
         <div className="fixed inset-0 bg-red-900/20 backdrop-blur-md flex items-center justify-center z-[60] p-4 text-center">
-          <div className="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl">
-            <h3 className="text-xl font-black text-slate-800 mb-2">確定要清空嗎？</h3>
-            <p className="text-sm text-slate-500 mb-8">所有紀錄將會消失。</p>
+          <div className="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl border-t-8 border-red-500">
+            <h3 className="text-xl font-black text-slate-800 mb-2">確定要全部抹除嗎？</h3>
+            <p className="text-sm text-slate-500 mb-8">帳本將歸零，迎接新心情。</p>
             <div className="flex gap-3">
                 <button onClick={clearAllRecords} className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-black">徹底清空</button>
-                <button onClick={() => setShowDeleteAllModal(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold">保留</button>
+                <button onClick={() => setShowDeleteAllModal(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold">保留紀錄</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 匯出彈窗 */}
+      {/* 單筆刪除、匯出視窗同前 */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 text-center">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
             <h3 className="text-lg font-black mb-6 text-slate-800">匯出自由記錄</h3>
             <button onClick={copyForSheets} className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black">複製到剪貼簿</button>
             <button onClick={() => setShowExportModal(false)} className="w-full py-4 text-slate-400 font-bold mt-2">取消</button>
           </div>
         </div>
       )}
-
-      {/* 單筆刪除確認 */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-slate-900/20 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-2xl max-w-xs w-full text-center">
-            <h3 className="font-black text-slate-800 mb-6">要刪除嗎？</h3>
+            <h3 className="font-black text-slate-800 mb-6 text-sm">要刪除這筆紀錄嗎？</h3>
             <div className="flex gap-3">
               <button onClick={() => { const updated = records.filter(r => r.id !== deleteTarget.id); setRecords(updated); saveData(updated, null); setShowDeleteModal(false); }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-black">刪除</button>
-              <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-400">取消</button>
+              <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-400">保留</button>
             </div>
           </div>
         </div>
