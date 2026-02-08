@@ -4,7 +4,7 @@ import { Download, Trash2, Eye, EyeOff, Copy, ThumbsUp, Leaf, AlertTriangle, Clo
 const SalaryTracker = () => {
   const [records, setRecords] = useState([]);
   const [settings, setSettings] = useState({
-    hourlyRate: 196,
+    hourlyRate: 200, // 預設時薪已更新為 200
     overtimeRate1: 1.34,
     overtimeRate2: 1.67,
     settlementDay: 25
@@ -46,6 +46,7 @@ const SalaryTracker = () => {
     if (savedRecords) {
         try { setRecords(JSON.parse(savedRecords)); } catch(e) { setRecords([]); }
     }
+    // 如果本地沒存過設定，就用預設的 200
     if (savedSettings) setSettings(JSON.parse(savedSettings));
   }, []);
 
@@ -203,7 +204,7 @@ const SalaryTracker = () => {
           </div>
         </div>
 
-        {/* 歷史紀錄列表 - 補回時間與時薪 */}
+        {/* 歷史紀錄列表 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-4 bg-slate-50 border-b flex justify-between items-center text-xs font-black text-slate-400 uppercase tracking-widest">
             <span>📜 歷史存摺</span>
@@ -273,7 +274,7 @@ const SalaryTracker = () => {
         <div className="fixed inset-0 bg-red-900/20 backdrop-blur-md flex items-center justify-center z-[60] p-4 text-center">
           <div className="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl border-t-8 border-red-500">
             <h3 className="text-xl font-black text-slate-800 mb-2">確定要全部抹除嗎？</h3>
-            <p className="text-sm text-slate-500 mb-8">帳本將歸零，迎接新心情。</p>
+            <p className="text-sm text-slate-500 mb-8">帳本將歸零。</p>
             <div className="flex gap-3">
                 <button onClick={clearAllRecords} className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-black">徹底清空</button>
                 <button onClick={() => setShowDeleteAllModal(false)} className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold">保留紀錄</button>
@@ -282,16 +283,18 @@ const SalaryTracker = () => {
         </div>
       )}
 
-      {/* 單筆刪除、匯出視窗同前 */}
+      {/* 匯出彈窗 */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 text-center">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
             <h3 className="text-lg font-black mb-6 text-slate-800">匯出自由記錄</h3>
             <button onClick={copyForSheets} className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black">複製到剪貼簿</button>
             <button onClick={() => setShowExportModal(false)} className="w-full py-4 text-slate-400 font-bold mt-2">取消</button>
           </div>
         </div>
       )}
+
+      {/* 單筆刪除確認 */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-slate-900/20 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-2xl max-w-xs w-full text-center">
