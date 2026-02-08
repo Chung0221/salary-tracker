@@ -166,7 +166,7 @@ const SalaryTracker = () => {
           <div className="flex items-center gap-2 mb-2 p-3 bg-slate-900 rounded-xl">
             <TrendingUp size={16} className="text-emerald-400"/>
             <span className="text-sm font-black text-white italic tracking-tighter">
-              「前公司再亂，錢入帳才是真的。存錢賺高利息，每一塊錢都要精算！」
+              「公司亂它的，我存我的；每一筆賠償金，都是我離開這裡的底氣。」
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -279,3 +279,4 @@ const SalaryTracker = () => {
 };
 
 export default SalaryTracker;
+
